@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="jetbrains">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Informatik Interaktiv</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* JetBrains PyCharm Dark Theme Colors */
+            --jb-bg-primary: #2B2B2B;
+            --jb-bg-secondary: #3C3F41;
+            --jb-bg-tertiary: #313335;
+            --jb-bg-hover: #4B4E51;
+            --jb-text-primary: #BBBBBB;
+            --jb-text-secondary: #9E9E9E;
+            --jb-text-bright: #FFFFFF;
+            --jb-border: #555555;
+            --jb-accent-blue: #3592C4;
+            --jb-accent-green: #499C54;
+            --jb-accent-orange: #C77D48;
+            --jb-accent-yellow: #FFC66D;
+            --jb-accent-purple: #9876AA;
+            --jb-accent-red: #D16969;
+            --jb-selection: #214283;
+            --jb-scrollbar: #555555;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'JetBrains Mono', 'Consolas', monospace;
+            background-color: var(--jb-bg-primary);
+            color: var(--jb-text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .admin-header {
+            background-color: var(--jb-bg-secondary);
+            border-bottom: 1px solid var(--jb-border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-header h1 {
+            color: var(--jb-text-bright);
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--jb-accent-blue), var(--jb-accent-purple));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 18px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--jb-border);
+            background-color: var(--jb-bg-tertiary);
+            color: var(--jb-text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: var(--jb-bg-hover);
+            border-color: var(--jb-accent-blue);
+        }
+
+        .btn-primary {
+            background-color: var(--jb-accent-blue);
+            color: white;
+            border-color: var(--jb-accent-blue);
+        }
+
+        .btn-primary:hover {
+            background-color: #2980B9;
+        }
+
+        .btn-success {
+            background-color: var(--jb-accent-green);
+            color: white;
+            border-color: var(--jb-accent-green);
+        }
+
+        /* Main Content */
+        .admin-container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            color: var(--jb-text-bright);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--jb-border);
+        }
+
+        /* Card Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Card Component (Karteikarte) */
+        .card {
+            background-color: var(--jb-bg-secondary);
+            border: 1px solid var(--jb-border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .card:hover {
+            border-color: var(--jb-accent-blue);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--jb-border);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .icon-html {
+            background: linear-gradient(135deg, #E44D26, #F16529);
+        }
+
+        .icon-css {
+            background: linear-gradient(135deg, #1572B6, #33A9DC);
+        }
+
+        .icon-python {
+            background: linear-gradient(135deg, #306998, #FFD43B);
+        }
+
+        .icon-link {
+            background: linear-gradient(135deg, var(--jb-accent-blue), var(--jb-accent-purple));
+        }
+
+        .icon-qr {
+            background: linear-gradient(135deg, var(--jb-accent-green), var(--jb-accent-yellow));
+        }
+
+        .icon-notion {
+            background: linear-gradient(135deg, #000000, #444444);
+        }
+
+        .card-title {
+            color: var(--jb-text-bright);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-subtitle {
+            color: var(--jb-text-secondary);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .card-body {
+            margin-bottom: 15px;
+        }
+
+        .card-description {
+            color: var(--jb-text-primary);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .card-content {
+            background-color: var(--jb-bg-tertiary);
+            border: 1px solid var(--jb-border);
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .url-display {
+            color: var(--jb-accent-blue);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            user-select: all;
+        }
+
+        .qr-container {
+            text-align: center;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .qr-container canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--jb-bg-secondary);
+            border: 1px solid var(--jb-border);
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--jb-accent-blue);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--jb-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--jb-text-primary);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--jb-bg-tertiary);
+            border: 1px solid var(--jb-border);
+            border-radius: 4px;
+            color: var(--jb-text-primary);
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--jb-accent-blue);
+            background-color: var(--jb-bg-primary);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background-color: var(--jb-bg-secondary);
+            border: 1px solid var(--jb-accent-green);
+            border-left: 4px solid var(--jb-accent-green);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.error {
+            border-color: var(--jb-accent-red);
+            border-left-color: var(--jb-accent-red);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 15px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        /* Code Block */
+        .code-block {
+            background-color: var(--jb-bg-primary);
+            border: 1px solid var(--jb-border);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--jb-accent-yellow);
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background-color: var(--jb-accent-green);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--jb-accent-orange);
+            color: white;
+        }
+
+        .badge-info {
+            background-color: var(--jb-accent-blue);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <h1>
+            <span class="logo-icon">🚀</span>
+            Informatik Interaktiv - Admin Panel
+        </h1>
+        <div class="header-actions">
+            <a href="index.html" class="btn">← Zur Hauptseite</a>
+            <button class="btn btn-success" id="refreshBtn">🔄 Aktualisieren</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="admin-container">
+        <!-- Statistics Section -->
+        <h2 class="section-title">📊 Statistik-Übersicht</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalStudents">0</div>
+                <div class="stat-label">Angemeldete Schüler</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalProgress">0%</div>
+                <div class="stat-label">Durchschnitt Fortschritt</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAttempts">0</div>
+                <div class="stat-label">Gesamte Versuche</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completedLevels">0</div>
+                <div class="stat-label">Abgeschlossene Level</div>
+            </div>
+        </div>
+
+        <!-- Management Cards Section -->
+        <h2 class="section-title">🎯 Verwaltung & Tools</h2>
+        <div class="cards-grid">
+            <!-- Link Sharing Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-link">🔗</div>
+                    <div>
+                        <div class="card-title">Zugangslink für Schüler</div>
+                        <div class="card-subtitle">Hauptseite</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Teilen Sie diesen Link mit Ihren Schülern:</p>
+                    <div class="card-content">
+                        <div class="url-display" id="mainPageUrl">Loading...</div>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-small btn-primary" onclick="copyToClipboard('mainPageUrl')">📋 Link kopieren</button>
+                    <button class="btn btn-small" onclick="openUrl('mainPageUrl')">🔗 Öffnen</button>
+                </div>
+            </div>
+
+            <!-- QR Code Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-qr">📱</div>
+                    <div>
+                        <div class="card-title">QR-Code Generator</div>
+                        <div class="card-subtitle">Für mobilen Zugriff</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">QR-Code für einfachen Zugriff:</p>
+                    <div class="qr-container" id="qrContainer">
+                        <canvas id="qrCanvas"></canvas>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-small btn-primary" onclick="downloadQR()">💾 QR-Code speichern</button>
+                    <button class="btn btn-small" onclick="generateQR()">🔄 Neu generieren</button>
+                </div>
+            </div>
+
+            <!-- GitHub Pages Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-link">
+                        <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="card-title">GitHub Pages Link</div>
+                        <div class="card-subtitle">Öffentliche URL</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Ihr Repository GitHub Pages Link:</p>
+                    <div class="card-content">
+                        <div class="url-display" id="githubPagesUrl">Noch nicht konfiguriert</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">GitHub Username</label>
+                        <input type="text" class="form-input" id="githubUsername" placeholder="z.B. acabrera">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Repository Name</label>
+                        <input type="text" class="form-input" id="repoName" value="Informatik_interaktiv">
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-small btn-primary" onclick="generateGitHubUrl()">🔗 Link generieren</button>
+                    <button class="btn btn-small" onclick="copyToClipboard('githubPagesUrl')">📋 Kopieren</button>
+                </div>
+            </div>
+
+            <!-- Notion Integration Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-notion">
+                        <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                            <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="card-title">Notion Integration</div>
+                        <div class="card-subtitle">Schüler-Datenbank</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Status der Notion-Synchronisation:</p>
+                    <div class="card-content">
+                        <div id="notionStatus">
+                            <span class="badge badge-warning">Backend nicht erreichbar</span>
+                            <p style="margin-top: 10px; font-size: 12px; color: var(--jb-text-secondary);">
+                                Starten Sie den Backend-Server mit: <code style="color: var(--jb-accent-yellow);">npm start</code>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="code-block">
+# Setup Schritte:
+1. npm install
+2. .env erstellen (siehe .env.example)
+3. npm start
+4. Notion API Key hinzufügen
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-small btn-success" onclick="testNotionConnection()">🔌 Verbindung testen</button>
+                    <a href="https://www.notion.so/my-integrations" target="_blank" class="btn btn-small">⚙️ Notion API</a>
+                </div>
+            </div>
+
+            <!-- Export Data Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-css">📊</div>
+                    <div>
+                        <div class="card-title">Daten Export</div>
+                        <div class="card-subtitle">CSV & Excel</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Exportieren Sie Schüler-Fortschritte als CSV:</p>
+                    <div class="card-content">
+                        <div style="font-size: 12px; color: var(--jb-text-secondary);">
+                            <p>Gespeicherte Datensätze: <strong id="exportCount">0</strong></p>
+                            <p style="margin-top: 5px;">Letzte Aktualisierung: <span id="lastUpdate">-</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-small btn-primary" onclick="exportCSV()">💾 CSV herunterladen</button>
+                    <button class="btn btn-small" onclick="viewData()">👁️ Daten ansehen</button>
+                </div>
+            </div>
+
+            <!-- Documentation Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-python">📖</div>
+                    <div>
+                        <div class="card-title">Dokumentation</div>
+                        <div class="card-subtitle">Setup & Hilfe</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Wichtige Links und Ressourcen:</p>
+                    <div class="card-content" style="font-size: 12px;">
+                        <p>✓ README.md - Vollständige Anleitung</p>
+                        <p>✓ .env.example - Konfiguration</p>
+                        <p>✓ Level-Daten in app.js</p>
+                        <p>✓ 27 vordefinierte Übungen</p>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <a href="README.md" target="_blank" class="btn btn-small btn-primary">📖 README öffnen</a>
+                    <button class="btn btn-small" onclick="showHelp()">❓ Hilfe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // ==================== INITIALIZATION ====================
+
+        let currentUrl = window.location.href.replace('/admin.html', '/index.html');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            displayMainUrl();
+            generateQR();
+            loadGitHubSettings();
+            testNotionConnection();
+        });
+
+        // ==================== URL & QR CODE ====================
+
+        function displayMainUrl() {
+            document.getElementById('mainPageUrl').textContent = currentUrl;
+        }
+
+        function generateQR() {
+            const canvas = document.getElementById('qrCanvas');
+            QRCode.toCanvas(canvas, currentUrl, {
+                width: 250,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            }, (error) => {
+                if (error) console.error('QR Code Error:', error);
+            });
+        }
+
+        function downloadQR() {
+            const canvas = document.getElementById('qrCanvas');
+            const link = document.createElement('a');
+            link.download = 'informatik-interaktiv-qr.png';
+            link.href = canvas.toDataURL();
+            link.click();
+            showNotification('QR-Code wurde heruntergeladen!');
+        }
+
+        // ==================== GITHUB PAGES ====================
+
+        function generateGitHubUrl() {
+            const username = document.getElementById('githubUsername').value.trim();
+            const repo = document.getElementById('repoName').value.trim();
+
+            if (!username) {
+                showNotification('Bitte GitHub Username eingeben!', 'error');
+                return;
+            }
+
+            const url = `https://${username}.github.io/${repo}/`;
+            document.getElementById('githubPagesUrl').textContent = url;
+
+            // Save to localStorage
+            localStorage.setItem('github_username', username);
+            localStorage.setItem('repo_name', repo);
+
+            showNotification('GitHub Pages URL generiert!');
+        }
+
+        function loadGitHubSettings() {
+            const username = localStorage.getItem('github_username');
+            const repo = localStorage.getItem('repo_name');
+
+            if (username) {
+                document.getElementById('githubUsername').value = username;
+            }
+            if (repo) {
+                document.getElementById('repoName').value = repo;
+            }
+
+            if (username && repo) {
+                generateGitHubUrl();
+            }
+        }
+
+        // ==================== CLIPBOARD ====================
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Link wurde in die Zwischenablage kopiert!');
+            }).catch(err => {
+                showNotification('Fehler beim Kopieren!', 'error');
+                console.error('Copy failed:', err);
+            });
+        }
+
+        function openUrl(elementId) {
+            const element = document.getElementById(elementId);
+            const url = element.textContent;
+            window.open(url, '_blank');
+        }
+
+        // ==================== NOTION CONNECTION ====================
+
+        async function testNotionConnection() {
+            const statusDiv = document.getElementById('notionStatus');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/health');
+
+                if (response.ok) {
+                    statusDiv.innerHTML = `
+                        <span class="badge badge-success">✓ Backend erreichbar</span>
+                        <p style="margin-top: 10px; font-size: 12px; color: var(--jb-text-primary);">
+                            Server läuft erfolgreich auf Port 3000
+                        </p>
+                    `;
+                } else {
+                    throw new Error('Server nicht erreichbar');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <span class="badge badge-warning">Backend nicht erreichbar</span>
+                    <p style="margin-top: 10px; font-size: 12px; color: var(--jb-text-secondary);">
+                        Starten Sie den Backend-Server mit: <code style="color: var(--jb-accent-yellow);">npm start</code>
+                    </p>
+                `;
+            }
+        }
+
+        // ==================== DATA EXPORT ====================
+
+        function exportCSV() {
+            const csvData = localStorage.getItem('exportData_admin');
+
+            if (!csvData) {
+                showNotification('Keine Daten zum Exportieren vorhanden!', 'error');
+                return;
+            }
+
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `schueler-fortschritte-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('CSV-Datei wurde heruntergeladen!');
+        }
+
+        function viewData() {
+            const data = localStorage.getItem('userProgress_admin');
+            if (!data) {
+                showNotification('Keine Daten vorhanden!', 'error');
+                return;
+            }
+
+            const progress = JSON.parse(data);
+            const formatted = JSON.stringify(progress, null, 2);
+
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(`
+                <html>
+                <head>
+                    <title>Schüler-Daten</title>
+                    <style>
+                        body {
+                            background: #2B2B2B;
+                            color: #BBBBBB;
+                            font-family: 'JetBrains Mono', monospace;
+                            padding: 20px;
+                        }
+                        pre {
+                            background: #1E1E1E;
+                            padding: 20px;
+                            border-radius: 8px;
+                            overflow-x: auto;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Schüler-Fortschrittsdaten (admin)</h1>
+                    <pre>${formatted}</pre>
+                </body>
+                </html>
+            `);
+        }
+
+        // ==================== STATISTICS ====================
+
+        function updateStats() {
+            const data = localStorage.getItem('userProgress_admin');
+            const exportData = localStorage.getItem('exportData_admin');
+
+            if (data) {
+                const progress = JSON.parse(data);
+                document.getElementById('totalStudents').textContent = '1'; // Only admin for now
+                document.getElementById('totalProgress').textContent =
+                    Math.round((progress.stats.totalCompleted / 24) * 100) + '%';
+                document.getElementById('totalAttempts').textContent = progress.stats.totalAttempts || 0;
+                document.getElementById('completedLevels').textContent = progress.stats.totalCompleted || 0;
+            }
+
+            if (exportData) {
+                const lines = exportData.split('\n').length - 1;
+                document.getElementById('exportCount').textContent = lines;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('de-DE');
+            }
+        }
+
+        // ==================== NOTIFICATIONS ====================
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================== HELP ====================
+
+        function showHelp() {
+            alert(`
+📖 HILFE & SUPPORT
+
+1. ZUGANGSLINK TEILEN
+   - Kopieren Sie den Link und teilen Sie ihn mit Schülern
+   - Oder nutzen Sie den QR-Code für mobilen Zugriff
+
+2. GITHUB PAGES
+   - Tragen Sie Ihren GitHub Username ein
+   - Repository Name ist bereits vorausgefüllt
+   - Klicken Sie auf "Link generieren"
+
+3. NOTION INTEGRATION
+   - Installieren Sie Dependencies: npm install
+   - Erstellen Sie .env Datei (siehe .env.example)
+   - Starten Sie Backend: npm start
+   - Testen Sie die Verbindung
+
+4. DATEN EXPORT
+   - CSV Export für Excel/Notion Import
+   - Daten werden automatisch gespeichert
+
+Bei weiteren Fragen: Siehe README.md
+            `);
+        }
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            updateStats();
+            testNotionConnection();
+            showNotification('Daten aktualisiert!');
+        });
+    </script>
+</body>
+</html>
