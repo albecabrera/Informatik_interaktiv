@@ -2,6 +2,23 @@
 
 Eine interaktive Lernplattform für den Informatikunterricht mit HTML, CSS und Python.
 
+---
+
+## 🌐 **Live-Demo**
+
+<div align="center">
+
+### **[🎯 Zur interaktiven Lernplattform →](https://albecabrera.github.io/Informatik_interaktiv/)**
+
+[![Launch App](https://img.shields.io/badge/🚀_Plattform_starten-4CAF50?style=for-the-badge)](https://albecabrera.github.io/Informatik_interaktiv/)
+[![Admin Panel](https://img.shields.io/badge/⚙️_Admin_Panel-2196F3?style=for-the-badge)](https://albecabrera.github.io/Informatik_interaktiv/admin.html)
+
+**Login:** `admin` / `admin123`
+
+</div>
+
+---
+
 ## 📋 Überblick
 
 Diese Plattform wurde speziell für den Informatikunterricht in NRW (Klasse 5-13) entwickelt. Schüler*innen können hier progressiv HTML, CSS und Python lernen mit interaktiven Übungen, sofortigem Feedback und einem motivierenden Achievement-System.
