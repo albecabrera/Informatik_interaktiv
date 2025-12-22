@@ -465,13 +465,13 @@ const LEVELS_DATA = {
             title: 'SQL WHERE - Daten filtern',
             description: 'Filtere Daten mit WHERE',
             difficulty: 'easy',
-            task: 'Wähle alle Schüler aus, deren Alter größer als 15 ist.',
+            task: 'Wähle alle Schüler aus, deren Alter (age) größer als 15 ist.',
             starterCode: '-- Deine SQL Abfrage hier\nSELECT * FROM schueler WHERE\n',
-            solution: 'SELECT * FROM schueler WHERE alter > 15;',
+            solution: 'SELECT * FROM schueler WHERE age > 15;',
             hints: [
                 'Verwende WHERE für Bedingungen',
                 'Der Vergleichsoperator > bedeutet "größer als"',
-                'Syntax: WHERE spaltenname > wert'
+                'Die Spalte heißt "age", nicht "alter"'
             ],
             validation: (code) => {
                 return code.toLowerCase().includes('where') && code.toLowerCase().includes('>');
@@ -501,13 +501,13 @@ const LEVELS_DATA = {
             title: 'SQL INSERT - Daten einfügen',
             description: 'Füge neue Daten ein',
             difficulty: 'medium',
-            task: 'Füge einen neuen Schüler mit Namen "Tim Berger", Alter 16 und Klasse "10a" ein.',
+            task: 'Füge einen neuen Schüler mit Namen "Tim Berger", Alter (age) 16 und Klasse "10a" ein.',
             starterCode: '-- Deine SQL Abfrage hier\nINSERT INTO schueler\n',
-            solution: 'INSERT INTO schueler (name, alter, klasse) VALUES (\'Tim Berger\', 16, \'10a\');',
+            solution: 'INSERT INTO schueler (name, age, klasse) VALUES (\'Tim Berger\', 16, \'10a\');',
             hints: [
                 'INSERT INTO fügt Daten ein',
                 'Syntax: INSERT INTO tabelle (spalten) VALUES (werte)',
-                'Strings brauchen Anführungszeichen'
+                'Die Spalte heißt "age", nicht "alter"'
             ],
             validation: (code) => {
                 return code.toLowerCase().includes('insert into') && code.toLowerCase().includes('values');
@@ -1752,73 +1752,121 @@ async function initializeSQL() {
             locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
         });
 
-        sqlDB = new SQL.Database();
+        // Try to load the database file
+        try {
+            const response = await fetch('schuldb.sqlite');
+            if (response.ok) {
+                const buffer = await response.arrayBuffer();
+                sqlDB = new SQL.Database(new Uint8Array(buffer));
+                console.log('SQL database loaded from file');
+            } else {
+                throw new Error('Database file not found, creating in-memory database');
+            }
+        } catch (fetchError) {
+            console.log('Creating in-memory database:', fetchError.message);
+            // Fallback: Create database in memory
+            sqlDB = new SQL.Database();
 
-        // Create tables
-        sqlDB.run(`
-            CREATE TABLE schueler (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                alter INTEGER,
-                klasse TEXT
-            );
-        `);
+            // Create tables
+            sqlDB.run(`
+                CREATE TABLE schueler (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    age INTEGER,
+                    klasse TEXT
+                );
+            `);
 
-        sqlDB.run(`
-            CREATE TABLE noten (
-                id INTEGER PRIMARY KEY,
-                schueler_id INTEGER,
-                fach TEXT,
-                note INTEGER,
-                FOREIGN KEY(schueler_id) REFERENCES schueler(id)
-            );
-        `);
+            sqlDB.run(`
+                CREATE TABLE noten (
+                    id INTEGER PRIMARY KEY,
+                    schueler_id INTEGER,
+                    fach TEXT,
+                    note INTEGER,
+                    FOREIGN KEY(schueler_id) REFERENCES schueler(id)
+                );
+            `);
 
-        sqlDB.run(`
-            CREATE TABLE kurse (
-                id INTEGER PRIMARY KEY,
-                kursname TEXT,
-                lehrer TEXT,
-                raum TEXT
-            );
-        `);
+            sqlDB.run(`
+                CREATE TABLE kurse (
+                    id INTEGER PRIMARY KEY,
+                    kursname TEXT,
+                    lehrer TEXT,
+                    raum TEXT
+                );
+            `);
 
-        // Insert sample data - Schueler
-        sqlDB.run(`
-            INSERT INTO schueler (id, name, alter, klasse) VALUES
-            (1, 'Anna Müller', 15, '9a'),
-            (2, 'Ben Schmidt', 16, '10b'),
-            (3, 'Clara Wagner', 15, '9a'),
-            (4, 'David Klein', 17, '11c'),
-            (5, 'Emma Fischer', 16, '10b'),
-            (6, 'Felix Weber', 15, '9a'),
-            (7, 'Greta Meyer', 16, '10a'),
-            (8, 'Hannah Bauer', 17, '11c');
-        `);
+            // Insert sample data - Schueler
+            sqlDB.run(`
+                INSERT INTO schueler (id, name, age, klasse) VALUES
+                (1, 'Anna Müller', 15, '9a'),
+                (2, 'Ben Schmidt', 16, '10b'),
+                (3, 'Clara Wagner', 15, '9a'),
+                (4, 'David Klein', 17, '11c'),
+                (5, 'Emma Fischer', 16, '10b'),
+                (6, 'Felix Weber', 15, '9a'),
+                (7, 'Greta Meyer', 16, '10a'),
+                (8, 'Hannah Bauer', 17, '11c'),
+                (9, 'Leon Hoffmann', 15, '9b'),
+                (10, 'Maria Schneider', 16, '10a');
+            `);
 
-        // Insert sample data - Noten
-        sqlDB.run(`
-            INSERT INTO noten (id, schueler_id, fach, note) VALUES
-            (1, 1, 'Mathematik', 2),
-            (2, 1, 'Deutsch', 1),
-            (3, 1, 'Englisch', 2),
-            (4, 2, 'Mathematik', 3),
-            (5, 2, 'Deutsch', 2),
-            (6, 3, 'Mathematik', 1),
-            (7, 3, 'Englisch', 1),
-            (8, 4, 'Mathematik', 2),
-            (9, 5, 'Deutsch', 3),
-            (10, 6, 'Mathematik', 2);
-        `);
+            // Insert sample data - Noten
+            sqlDB.run(`
+                INSERT INTO noten (id, schueler_id, fach, note) VALUES
+                (1, 1, 'Mathematik', 2),
+                (2, 1, 'Deutsch', 1),
+                (3, 1, 'Englisch', 2),
+                (4, 1, 'Informatik', 1),
+                (5, 2, 'Mathematik', 3),
+                (6, 2, 'Deutsch', 2),
+                (7, 2, 'Englisch', 3),
+                (8, 2, 'Informatik', 2),
+                (9, 3, 'Mathematik', 1),
+                (10, 3, 'Deutsch', 2),
+                (11, 3, 'Englisch', 1),
+                (12, 3, 'Informatik', 1),
+                (13, 4, 'Mathematik', 2),
+                (14, 4, 'Deutsch', 3),
+                (15, 4, 'Englisch', 2),
+                (16, 4, 'Informatik', 2),
+                (17, 5, 'Mathematik', 3),
+                (18, 5, 'Deutsch', 3),
+                (19, 5, 'Englisch', 2),
+                (20, 5, 'Informatik', 3),
+                (21, 6, 'Mathematik', 2),
+                (22, 6, 'Deutsch', 2),
+                (23, 6, 'Englisch', 2),
+                (24, 6, 'Informatik', 1),
+                (25, 7, 'Mathematik', 1),
+                (26, 7, 'Deutsch', 1),
+                (27, 7, 'Englisch', 1),
+                (28, 7, 'Informatik', 1),
+                (29, 8, 'Mathematik', 2),
+                (30, 8, 'Deutsch', 2),
+                (31, 8, 'Englisch', 3),
+                (32, 8, 'Informatik', 2),
+                (33, 9, 'Mathematik', 3),
+                (34, 9, 'Deutsch', 3),
+                (35, 9, 'Englisch', 3),
+                (36, 9, 'Informatik', 3),
+                (37, 10, 'Mathematik', 2),
+                (38, 10, 'Deutsch', 1),
+                (39, 10, 'Englisch', 2),
+                (40, 10, 'Informatik', 1);
+            `);
 
-        // Insert sample data - Kurse
-        sqlDB.run(`
-            INSERT INTO kurse (id, kursname, lehrer, raum) VALUES
-            (1, 'Informatik Grundlagen', 'Herr Müller', 'R101'),
-            (2, 'Web-Entwicklung', 'Frau Schmidt', 'R102'),
-            (3, 'Datenbanken', 'Herr Weber', 'R103'),
-            (4, 'Python Programmierung', 'Frau Klein', 'R104');
-        `);
+            // Insert sample data - Kurse
+            sqlDB.run(`
+                INSERT INTO kurse (id, kursname, lehrer, raum) VALUES
+                (1, 'Informatik Grundlagen', 'Herr Müller', 'R101'),
+                (2, 'Web-Entwicklung', 'Frau Schmidt', 'R102'),
+                (3, 'Datenbanken', 'Herr Weber', 'R103'),
+                (4, 'Python Programmierung', 'Frau Klein', 'R104'),
+                (5, 'JavaScript Basics', 'Herr Meyer', 'R105'),
+                (6, 'App-Entwicklung', 'Frau Becker', 'R106');
+            `);
+        }
 
         sqlReady = true;
         console.log('SQL.js loaded and database initialized');
