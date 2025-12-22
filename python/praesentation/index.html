@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Best Practices - Interaktive Präsentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .presentation-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1400px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .slide-container {
+            position: relative;
+            min-height: 600px;
+        }
+
+        .slide {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.5s;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .slide h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .slide p, .slide li {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .slide ul {
+            margin-left: 30px;
+        }
+
+        .code-section {
+            margin: 30px 0;
+        }
+
+        .code-editor {
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .CodeMirror {
+            height: auto;
+            min-height: 150px;
+            font-size: 14px;
+        }
+
+        .code-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            min-height: 100px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .run-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .run-button:active {
+            transform: translateY(0);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tip-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .tip-box strong {
+            color: #856404;
+        }
+
+        .good-practice {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .bad-practice {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .slide {
+                padding: 20px;
+            }
+
+            .slide h2 {
+                font-size: 1.5em;
+            }
+
+            .navigation {
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="header">
+            <h1>🐍 Python Best Practices</h1>
+            <p>Interaktive Präsentation mit Live-Code-Ausführung</p>
+        </div>
+
+        <div class="slide-container">
+            <!-- Slide 1: Willkommen -->
+            <div class="slide active">
+                <h2>Willkommen zur Python Best Practices Präsentation! 🎉</h2>
+                <p>Diese interaktive Präsentation zeigt dir die wichtigsten Best Practices in Python.</p>
+
+                <h3>Was dich erwartet:</h3>
+                <ul>
+                    <li>✅ 12 praktische Best Practice Tipps</li>
+                    <li>✅ Live-Code-Beispiele zum Ausprobieren</li>
+                    <li>✅ Direkte Code-Ausführung im Browser</li>
+                    <li>✅ Vergleich von gutem und schlechtem Code</li>
+                </ul>
+
+                <div class="tip-box">
+                    <strong>💡 Tipp:</strong> Du kannst alle Code-Beispiele bearbeiten und direkt ausführen.
+                    Probiere es aus und experimentiere!
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-0"></div>
+                    <button class="run-button" onclick="runCode(0)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-0">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Aussagekräftige Variablennamen -->
+            <div class="slide">
+                <h2>1. Aussagekräftige Variablennamen 📝</h2>
+                <p>Verwende beschreibende Namen, die den Zweck der Variable klar machen.</p>
+
+                <div class="bad-practice">
+                    <strong>❌ Schlecht:</strong>
+                    <pre>a = 25
+b = 60
+c = a * b</pre>
+                </div>
+
+                <div class="good-practice">
+                    <strong>✅ Gut:</strong>
+                    <pre>stundenpreis = 25
+arbeitsstunden = 60
+gesamtkosten = stundenpreis * arbeitsstunden</pre>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-1"></div>
+                    <button class="run-button" onclick="runCode(1)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-1">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 3: PEP 8 Namenskonventionen -->
+            <div class="slide">
+                <h2>2. PEP 8 Namenskonventionen 📋</h2>
+                <p>Folge den Python-Standards für Namensgebung:</p>
+
+                <ul>
+                    <li><strong>Variablen und Funktionen:</strong> kleinbuchstaben_mit_unterstrichen</li>
+                    <li><strong>Konstanten:</strong> GROSSBUCHSTABEN_MIT_UNTERSTRICHEN</li>
+                    <li><strong>Klassen:</strong> PascalCase</li>
+                </ul>
+
+                <div class="good-practice">
+                    <strong>✅ Beispiele:</strong>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-2"></div>
+                    <button class="run-button" onclick="runCode(2)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-2">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 4: Funktionen richtig verwenden -->
+            <div class="slide">
+                <h2>3. Funktionen richtig verwenden 🔧</h2>
+                <p>Eine Funktion sollte eine einzige, klar definierte Aufgabe erfüllen.</p>
+
+                <div class="tip-box">
+                    <strong>💡 Tipp:</strong> Wenn du eine Funktion nicht in einem kurzen Satz beschreiben kannst,
+                    ist sie wahrscheinlich zu komplex!
+                </div>
+
+                <div class="good-practice">
+                    <strong>✅ Gut - Kleine, fokussierte Funktionen:</strong>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-3"></div>
+                    <button class="run-button" onclick="runCode(3)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-3">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Liste Comprehensions -->
+            <div class="slide">
+                <h2>4. List Comprehensions nutzen 🚀</h2>
+                <p>List Comprehensions sind pythonisch, lesbar und oft schneller als Schleifen.</p>
+
+                <div class="bad-practice">
+                    <strong>❌ Umständlich:</strong>
+                    <pre>zahlen = []
+for i in range(10):
+    if i % 2 == 0:
+        zahlen.append(i * i)</pre>
+                </div>
+
+                <div class="good-practice">
+                    <strong>✅ Pythonisch:</strong>
+                    <pre>zahlen = [i * i for i in range(10) if i % 2 == 0]</pre>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-4"></div>
+                    <button class="run-button" onclick="runCode(4)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-4">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 6: String-Formatierung -->
+            <div class="slide">
+                <h2>5. Moderne String-Formatierung 💬</h2>
+                <p>Verwende f-Strings für lesbare und effiziente String-Formatierung (Python 3.6+).</p>
+
+                <div class="bad-practice">
+                    <strong>❌ Veraltet:</strong>
+                    <pre>name = "Anna"
+alter = 25
+text = "Ich bin " + name + " und " + str(alter) + " Jahre alt"</pre>
+                </div>
+
+                <div class="good-practice">
+                    <strong>✅ Modern mit f-Strings:</strong>
+                    <pre>name = "Anna"
+alter = 25
+text = f"Ich bin {name} und {alter} Jahre alt"</pre>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-5"></div>
+                    <button class="run-button" onclick="runCode(5)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-5">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 7: Exception Handling -->
+            <div class="slide">
+                <h2>6. Fehlerbehandlung mit try-except 🛡️</h2>
+                <p>Behandle Fehler explizit, anstatt das Programm abstürzen zu lassen.</p>
+
+                <div class="tip-box">
+                    <strong>💡 Tipp:</strong> Fange nur die spezifischen Fehler ab, die du erwartest.
+                    Vermeide blanke "except:"-Blöcke!
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-6"></div>
+                    <button class="run-button" onclick="runCode(6)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-6">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 8: Default-Argumente -->
+            <div class="slide">
+                <h2>7. Default-Argumente richtig nutzen ⚙️</h2>
+                <p>Default-Argumente machen Funktionen flexibler und benutzerfreundlicher.</p>
+
+                <div class="bad-practice">
+                    <strong>⚠️ Vorsicht bei veränderlichen Default-Werten:</strong>
+                    <pre># FALSCH!
+def funktion(liste=[]):
+    liste.append(1)
+    return liste</pre>
+                </div>
+
+                <div class="good-practice">
+                    <strong>✅ Richtig mit None:</strong>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-7"></div>
+                    <button class="run-button" onclick="runCode(7)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-7">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 9: enumerate() verwenden -->
+            <div class="slide">
+                <h2>8. enumerate() für Schleifen nutzen 🔄</h2>
+                <p>Verwende enumerate(), wenn du sowohl Index als auch Wert benötigst.</p>
+
+                <div class="bad-practice">
+                    <strong>❌ Umständlich:</strong>
+                    <pre>fruechte = ['Apfel', 'Banane', 'Kirsche']
+for i in range(len(fruechte)):
+    print(i, fruechte[i])</pre>
+                </div>
+
+                <div class="good-practice">
+                    <strong>✅ Pythonisch mit enumerate():</strong>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-8"></div>
+                    <button class="run-button" onclick="runCode(8)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-8">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 10: with-Statement -->
+            <div class="slide">
+                <h2>9. with-Statement für Ressourcen 📁</h2>
+                <p>Verwende "with" um sicherzustellen, dass Ressourcen korrekt geschlossen werden.</p>
+
+                <div class="bad-practice">
+                    <strong>❌ Fehleranfällig:</strong>
+                    <pre>datei = open('text.txt', 'r')
+inhalt = datei.read()
+datei.close()  # Vergessen? Fehler!</pre>
+                </div>
+
+                <div class="good-practice">
+                    <strong>✅ Sicher mit with:</strong>
+                    <pre>with open('text.txt', 'r') as datei:
+    inhalt = datei.read()
+# Datei wird automatisch geschlossen!</pre>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 Tipp:</strong> Das with-Statement funktioniert mit allen Objekten,
+                    die Context Manager sind (Dateien, Datenbankverbindungen, Netzwerk-Sockets, etc.)
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-9"></div>
+                    <button class="run-button" onclick="runCode(9)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-9">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 11: Dictionaries effektiv nutzen -->
+            <div class="slide">
+                <h2>10. Dictionaries effektiv nutzen 📚</h2>
+                <p>Dictionaries sind extrem vielseitig. Nutze ihre Power!</p>
+
+                <div class="good-practice">
+                    <strong>✅ Moderne Dictionary-Features:</strong>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-10"></div>
+                    <button class="run-button" onclick="runCode(10)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-10">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+
+            <!-- Slide 12: Docstrings verwenden -->
+            <div class="slide">
+                <h2>11. Docstrings für Dokumentation 📖</h2>
+                <p>Dokumentiere deine Funktionen mit Docstrings, nicht nur mit Kommentaren.</p>
+
+                <div class="good-practice">
+                    <strong>✅ Professionelle Dokumentation:</strong>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-editor" id="editor-11"></div>
+                    <button class="run-button" onclick="runCode(11)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-11">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 Tipp:</strong> Docstrings sind zugänglich über die help()-Funktion
+                    und werden von IDEs für Auto-Completion verwendet!
+                </div>
+            </div>
+
+            <!-- Slide 13: Zusammenfassung -->
+            <div class="slide">
+                <h2>12. Zusammenfassung & Weiterlernen 🎓</h2>
+
+                <h3>Die wichtigsten Best Practices:</h3>
+                <ul>
+                    <li>✅ Aussagekräftige Namen verwenden</li>
+                    <li>✅ PEP 8 Konventionen folgen</li>
+                    <li>✅ Kleine, fokussierte Funktionen schreiben</li>
+                    <li>✅ List Comprehensions nutzen</li>
+                    <li>✅ F-Strings für Formatierung</li>
+                    <li>✅ Fehler mit try-except behandeln</li>
+                    <li>✅ Default-Argumente richtig einsetzen</li>
+                    <li>✅ enumerate() statt range(len())</li>
+                    <li>✅ with-Statement für Ressourcen</li>
+                    <li>✅ Dictionary-Features ausnutzen</li>
+                    <li>✅ Docstrings schreiben</li>
+                </ul>
+
+                <div class="tip-box">
+                    <strong>🚀 Nächste Schritte:</strong>
+                    <ul>
+                        <li>Lies den PEP 8 Style Guide</li>
+                        <li>Übe mit echten Projekten</li>
+                        <li>Code-Reviews mit anderen</li>
+                        <li>Lerne Type Hints kennen</li>
+                        <li>Erkunde Python-Module wie itertools</li>
+                    </ul>
+                </div>
+
+                <div class="code-section">
+                    <h3>Probiere selbst etwas aus! 🎨</h3>
+                    <div class="code-editor" id="editor-12"></div>
+                    <button class="run-button" onclick="runCode(12)">▶ Code ausführen</button>
+                    <div class="code-output" id="output-12">Klicke auf "Code ausführen" um das Programm zu starten...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">◀ Zurück</button>
+            <span class="slide-counter">
+                <span id="currentSlide">1</span> / <span id="totalSlides">13</span>
+            </span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Weiter ▶</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        let pyodide = null;
+        let editors = [];
+
+        // Code-Beispiele für jede Folie
+        const codeExamples = [
+            // Slide 1: Willkommen
+            `# Willkommen zu Python!
+print("Hallo, Welt!")
+print("Viel Spaß beim Lernen der Best Practices!")`,
+
+            // Slide 2: Aussagekräftige Variablennamen
+            `# Gutes Beispiel: Aussagekräftige Namen
+stundenpreis = 25
+arbeitsstunden = 60
+gesamtkosten = stundenpreis * arbeitsstunden
+
+print(f"Gesamtkosten: {gesamtkosten}€")`,
+
+            // Slide 3: PEP 8 Namenskonventionen
+            `# PEP 8 Namenskonventionen
+
+# Konstanten
+MAX_VERBINDUNGEN = 100
+PI = 3.14159
+
+# Variablen und Funktionen
+benutzer_name = "Anna"
+alter_in_jahren = 25
+
+def berechne_quadrat(zahl):
+    return zahl ** 2
+
+# Klassen
+class BenutzerProfil:
+    def __init__(self, name):
+        self.name = name
+
+print(f"Quadrat von 5: {berechne_quadrat(5)}")
+print(f"Max. Verbindungen: {MAX_VERBINDUNGEN}")`,
+
+            // Slide 4: Funktionen
+            `# Kleine, fokussierte Funktionen
+
+def ist_gerade(zahl):
+    """Prüft ob eine Zahl gerade ist."""
+    return zahl % 2 == 0
+
+def quadrat(zahl):
+    """Berechnet das Quadrat einer Zahl."""
+    return zahl ** 2
+
+def verarbeite_zahlen(zahlen):
+    """Verarbeitet eine Liste von Zahlen."""
+    gerade_quadrate = [quadrat(z) for z in zahlen if ist_gerade(z)]
+    return gerade_quadrate
+
+zahlen = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+resultat = verarbeite_zahlen(zahlen)
+print(f"Quadrate der geraden Zahlen: {resultat}")`,
+
+            // Slide 5: List Comprehensions
+            `# List Comprehensions - Elegant und effizient
+
+# Quadrate von geraden Zahlen
+gerade_quadrate = [i * i for i in range(10) if i % 2 == 0]
+print(f"Gerade Quadrate: {gerade_quadrate}")
+
+# Namen in Großbuchstaben
+namen = ['anna', 'ben', 'clara', 'david']
+namen_gross = [name.upper() for name in namen]
+print(f"Namen in Großbuchstaben: {namen_gross}")
+
+# Dictionary Comprehension
+quadrat_dict = {i: i**2 for i in range(1, 6)}
+print(f"Quadrat Dictionary: {quadrat_dict}")`,
+
+            // Slide 6: String-Formatierung
+            `# Moderne String-Formatierung mit f-Strings
+
+name = "Anna"
+alter = 25
+stadt = "Berlin"
+
+# F-Strings sind lesbar und effizient
+text = f"Ich bin {name}, {alter} Jahre alt und wohne in {stadt}"
+print(text)
+
+# Berechnungen in f-Strings
+preis = 19.99
+menge = 3
+print(f"Gesamtpreis: {preis * menge:.2f}€")
+
+# Datum formatieren
+from datetime import datetime
+jetzt = datetime.now()
+print(f"Heute ist der {jetzt:%d.%m.%Y}")`,
+
+            // Slide 7: Exception Handling
+            `# Fehlerbehandlung mit try-except
+
+def sichere_division(a, b):
+    """Sichere Division mit Fehlerbehandlung."""
+    try:
+        resultat = a / b
+        return f"Resultat: {resultat}"
+    except ZeroDivisionError:
+        return "Fehler: Division durch Null!"
+    except TypeError:
+        return "Fehler: Ungültige Datentypen!"
+
+# Teste verschiedene Fälle
+print(sichere_division(10, 2))
+print(sichere_division(10, 0))
+print(sichere_division(10, "text"))`,
+
+            // Slide 8: Default-Argumente
+            `# Default-Argumente richtig nutzen
+
+def erstelle_liste(wert, liste=None):
+    """Erstellt eine Liste mit korrektem Default-Wert."""
+    if liste is None:
+        liste = []
+    liste.append(wert)
+    return liste
+
+# Jeder Aufruf erstellt eine neue Liste
+liste1 = erstelle_liste(1)
+liste2 = erstelle_liste(2)
+liste3 = erstelle_liste(3, liste1)
+
+print(f"Liste 1: {liste1}")
+print(f"Liste 2: {liste2}")
+print(f"Liste 3: {liste3}")`,
+
+            // Slide 9: enumerate()
+            `# enumerate() für elegante Schleifen
+
+fruechte = ['Apfel', 'Banane', 'Kirsche', 'Dattel']
+
+# Mit enumerate() Index und Wert
+print("Meine Früchte:")
+for index, frucht in enumerate(fruechte, start=1):
+    print(f"{index}. {frucht}")
+
+# Auch mit Dictionary
+print("\\nAls Dictionary:")
+fruechte_dict = {i: frucht for i, frucht in enumerate(fruechte, start=1)}
+print(fruechte_dict)`,
+
+            // Slide 10: with-Statement
+            `# with-Statement Simulation (da Dateien im Browser nicht funktionieren)
+
+class FakeFile:
+    """Simuliert ein File-Objekt für Demo-Zwecke."""
+    def __init__(self, name):
+        self.name = name
+        print(f"Datei '{name}' geöffnet")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print(f"Datei '{self.name}' geschlossen")
+        return False
+
+    def read(self):
+        return "Dies ist der Dateiinhalt!"
+
+# Verwende with-Statement
+print("Mit with-Statement:")
+with FakeFile("beispiel.txt") as datei:
+    inhalt = datei.read()
+    print(f"Inhalt: {inhalt}")
+
+print("Datei wurde automatisch geschlossen!")`,
+
+            // Slide 11: Dictionaries
+            `# Dictionaries effektiv nutzen
+
+# Dictionary erstellen
+person = {
+    'name': 'Anna',
+    'alter': 25,
+    'stadt': 'Berlin'
+}
+
+# get() mit Default-Wert
+print(f"Name: {person.get('name', 'Unbekannt')}")
+print(f"Beruf: {person.get('beruf', 'Nicht angegeben')}")
+
+# Dictionary Comprehension
+quadrate = {x: x**2 for x in range(1, 6)}
+print(f"Quadrate: {quadrate}")
+
+# Dictionaries zusammenführen (Python 3.9+)
+zusatz = {'beruf': 'Entwicklerin', 'sprachen': ['Python', 'JavaScript']}
+person_komplett = {**person, **zusatz}
+print(f"Komplett: {person_komplett}")`,
+
+            // Slide 12: Docstrings
+            `# Docstrings für professionelle Dokumentation
+
+def berechne_flaeche(laenge, breite):
+    """
+    Berechnet die Fläche eines Rechtecks.
+
+    Args:
+        laenge (float): Die Länge des Rechtecks
+        breite (float): Die Breite des Rechtecks
+
+    Returns:
+        float: Die berechnete Fläche
+
+    Beispiel:
+        >>> berechne_flaeche(5, 3)
+        15
+    """
+    return laenge * breite
+
+# Nutze die Funktion
+flaeche = berechne_flaeche(5, 3)
+print(f"Fläche: {flaeche}")
+
+# Docstring anzeigen
+print(f"\\nDokumentation:")
+print(berechne_flaeche.__doc__)`,
+
+            // Slide 13: Freier Code
+            `# Hier kannst du eigenen Code ausprobieren!
+
+# Beispiel: Fibonacci-Zahlen mit Best Practices
+def fibonacci(n):
+    """Generiert die ersten n Fibonacci-Zahlen."""
+    zahlen = [0, 1]
+    for _ in range(n - 2):
+        zahlen.append(zahlen[-1] + zahlen[-2])
+    return zahlen[:n]
+
+# Teste es
+fib_zahlen = fibonacci(10)
+print(f"Erste 10 Fibonacci-Zahlen: {fib_zahlen}")
+
+# Schreibe deinen eigenen Code hier!
+`
+        ];
+
+        // Pyodide initialisieren
+        async function initPyodide() {
+            try {
+                pyodide = await loadPyodide();
+                console.log("Pyodide erfolgreich geladen!");
+                // Ändere den Output-Text für die erste Folie
+                document.getElementById('output-0').textContent =
+                    "Python ist bereit! Klicke auf 'Code ausführen' um das Programm zu starten...";
+            } catch (error) {
+                console.error("Fehler beim Laden von Pyodide:", error);
+                document.getElementById('output-0').textContent =
+                    "Fehler beim Laden von Python. Bitte Seite neu laden.";
+            }
+        }
+
+        // Code-Editoren initialisieren
+        function initEditors() {
+            for (let i = 0; i < 13; i++) {
+                const editor = CodeMirror(document.getElementById(`editor-${i}`), {
+                    value: codeExamples[i],
+                    mode: 'python',
+                    theme: 'monokai',
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    autoCloseBrackets: true
+                });
+                editors.push(editor);
+            }
+        }
+
+        // Code ausführen
+        async function runCode(slideIndex) {
+            const outputElement = document.getElementById(`output-${slideIndex}`);
+
+            if (!pyodide) {
+                outputElement.textContent = "Lade Python... Bitte einen Moment warten...";
+                await initPyodide();
+                if (!pyodide) {
+                    return;
+                }
+            }
+
+            const code = editors[slideIndex].getValue();
+            outputElement.textContent = "Code wird ausgeführt...\n";
+
+            try {
+                // Stdout umleiten
+                let output = "";
+                pyodide.setStdout({
+                    batched: (text) => {
+                        output += text + "\n";
+                    }
+                });
+
+                // Code ausführen
+                await pyodide.runPythonAsync(code);
+
+                outputElement.textContent = output || "Code erfolgreich ausgeführt! (keine Ausgabe)";
+            } catch (error) {
+                outputElement.textContent = `Fehler:\n${error.message}`;
+            }
+        }
+
+        // Folien-Navigation
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+
+            // Buttons aktivieren/deaktivieren
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Tastatur-Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        // Initialisierung
+        window.addEventListener('load', () => {
+            initEditors();
+            showSlide(0);
+            initPyodide();
+        });
+    </script>
+</body>
+</html>
