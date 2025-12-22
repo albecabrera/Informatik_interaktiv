@@ -909,6 +909,111 @@
             font-size: 14px;
         }
 
+        /* Database Schema Panel */
+        .db-schema-panel {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .db-schema-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .db-schema-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .db-table-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .db-table-tab {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .db-table-tab:hover {
+            background: var(--bg-primary);
+        }
+
+        .db-table-tab.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .db-table-view {
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .db-table-view.active {
+            display: block;
+        }
+
+        .db-schema-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .db-schema-table th {
+            background: var(--accent-primary);
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .db-schema-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .db-schema-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .db-schema-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .db-toggle-btn {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .db-toggle-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
         /* Free Code Editor */
         .free-editor-controls {
             display: flex;

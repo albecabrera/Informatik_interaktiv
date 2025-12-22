@@ -1199,6 +1199,7 @@ function openLevel(level, language) {
 function createCodingScreen(level, language) {
     const needsConsole = language === 'python' || language === 'sql';
     const needsCanvas = language === 'lua';
+    const needsDBSchema = language === 'sql';
 
     return `
         <div class="coding-header">
@@ -1212,6 +1213,7 @@ function createCodingScreen(level, language) {
                 <button class="btn btn-secondary" onclick="skipLevel('${language}')">⏭ Überspringen</button>
             </div>
         </div>
+        ${needsDBSchema ? '<div id="dbSchemaContainer"></div>' : ''}
         <div class="coding-workspace">
             <div class="editor-panel">
                 <div class="panel-header">Code Editor</div>
@@ -1258,6 +1260,13 @@ function initializeEditor(level, language) {
     // Initialize canvas for Lua
     if (language === 'lua') {
         initializeRobloxCanvas();
+    }
+
+    // Initialize database schema for SQL
+    if (language === 'sql') {
+        setTimeout(() => {
+            renderDatabaseSchema();
+        }, 100);
     }
 }
 
@@ -1741,6 +1750,90 @@ async function initializePyodide() {
     } catch (err) {
         console.error('Failed to load Pyodide:', err);
         pyodideReady = false;
+    }
+}
+
+// ==================== DATABASE SCHEMA VIEWER ====================
+
+function renderDatabaseSchema() {
+    const container = document.getElementById('dbSchemaContainer');
+    if (!container || !sqlReady || !sqlDB) return;
+
+    container.innerHTML = `
+        <div class="db-schema-panel">
+            <div class="db-schema-header">
+                <div class="db-schema-title">📊 Datenbank Referenz</div>
+                <button class="db-toggle-btn" onclick="toggleDBSchema()">Ausblenden</button>
+            </div>
+            <div class="db-table-tabs">
+                <button class="db-table-tab active" onclick="switchDBTable('schueler')">Schüler</button>
+                <button class="db-table-tab" onclick="switchDBTable('noten')">Noten</button>
+                <button class="db-table-tab" onclick="switchDBTable('kurse')">Kurse</button>
+            </div>
+            <div id="dbTableContent"></div>
+        </div>
+    `;
+
+    // Load initial table
+    switchDBTable('schueler');
+}
+
+function switchDBTable(tableName) {
+    if (!sqlReady || !sqlDB) return;
+
+    // Update active tab
+    document.querySelectorAll('.db-table-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event?.target?.classList?.add('active') || document.querySelector(`.db-table-tab:first-child`).classList.add('active');
+
+    try {
+        const result = sqlDB.exec(`SELECT * FROM ${tableName}`);
+        const content = document.getElementById('dbTableContent');
+
+        if (result.length === 0) {
+            content.innerHTML = '<p style="color: var(--text-secondary);">Keine Daten gefunden.</p>';
+            return;
+        }
+
+        const columns = result[0].columns;
+        const values = result[0].values;
+
+        let tableHTML = '<div class="db-table-view active"><table class="db-schema-table"><thead><tr>';
+
+        columns.forEach(col => {
+            tableHTML += `<th>${escapeHtml(col)}</th>`;
+        });
+
+        tableHTML += '</tr></thead><tbody>';
+
+        values.forEach(row => {
+            tableHTML += '<tr>';
+            row.forEach(cell => {
+                tableHTML += `<td>${escapeHtml(String(cell))}</td>`;
+            });
+            tableHTML += '</tr>';
+        });
+
+        tableHTML += '</tbody></table></div>';
+
+        content.innerHTML = tableHTML;
+    } catch (err) {
+        console.error('Error loading table:', err);
+        document.getElementById('dbTableContent').innerHTML = `<p style="color: red;">Fehler beim Laden der Tabelle: ${escapeHtml(err.message)}</p>`;
+    }
+}
+
+function toggleDBSchema() {
+    const panel = document.querySelector('.db-schema-panel');
+    const btn = document.querySelector('.db-toggle-btn');
+
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        btn.textContent = 'Ausblenden';
+    } else {
+        panel.style.display = 'none';
+        btn.textContent = 'Einblenden';
     }
 }
 
