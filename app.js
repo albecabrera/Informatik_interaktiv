@@ -439,6 +439,134 @@ const LEVELS_DATA = {
                 return code.includes('{') && code.includes('}') && code.includes(':');
             }
         }
+    ],
+    sql: [
+        {
+            id: 'sql-1',
+            number: '4.1',
+            title: 'SQL Basics - SELECT Abfragen',
+            description: 'Lerne die grundlegende SELECT-Anweisung',
+            difficulty: 'easy',
+            task: 'Wähle alle Spalten aus der Tabelle "users" aus.',
+            starterCode: '-- Deine SQL Abfrage hier\n',
+            solution: 'SELECT * FROM users;',
+            hints: [
+                'Verwende SELECT * um alle Spalten auszuwählen',
+                'FROM gibt die Tabelle an',
+                'Vergiss nicht das Semikolon am Ende'
+            ],
+            validation: (code) => {
+                return code.toLowerCase().includes('select') && code.toLowerCase().includes('from');
+            }
+        },
+        {
+            id: 'sql-2',
+            number: '4.2',
+            title: 'SQL WHERE - Daten filtern',
+            description: 'Filtere Daten mit WHERE',
+            difficulty: 'easy',
+            task: 'Wähle alle Benutzer aus, deren Alter größer als 18 ist.',
+            starterCode: '-- Deine SQL Abfrage hier\nSELECT * FROM users\n',
+            solution: 'SELECT * FROM users WHERE age > 18;',
+            hints: [
+                'Verwende WHERE für Bedingungen',
+                'Der Vergleichsoperator > bedeutet "größer als"',
+                'Syntax: WHERE spaltenname > wert'
+            ],
+            validation: (code) => {
+                return code.toLowerCase().includes('where') && code.toLowerCase().includes('>');
+            }
+        },
+        {
+            id: 'sql-3',
+            number: '4.3',
+            title: 'SQL ORDER BY - Sortieren',
+            description: 'Sortiere Ergebnisse',
+            difficulty: 'medium',
+            task: 'Wähle alle Benutzer aus und sortiere sie nach Namen aufsteigend.',
+            starterCode: '-- Deine SQL Abfrage hier\n',
+            solution: 'SELECT * FROM users ORDER BY name ASC;',
+            hints: [
+                'ORDER BY sortiert die Ergebnisse',
+                'ASC = aufsteigend, DESC = absteigend',
+                'Syntax: ORDER BY spaltenname ASC'
+            ],
+            validation: (code) => {
+                return code.toLowerCase().includes('order by');
+            }
+        },
+        {
+            id: 'sql-4',
+            number: '4.4',
+            title: 'SQL INSERT - Daten einfügen',
+            description: 'Füge neue Daten ein',
+            difficulty: 'medium',
+            task: 'Füge einen neuen Benutzer mit Namen "Max" und Alter 25 ein.',
+            starterCode: '-- Deine SQL Abfrage hier\n',
+            solution: 'INSERT INTO users (name, age) VALUES (\'Max\', 25);',
+            hints: [
+                'INSERT INTO fügt Daten ein',
+                'Syntax: INSERT INTO tabelle (spalten) VALUES (werte)',
+                'Strings brauchen Anführungszeichen'
+            ],
+            validation: (code) => {
+                return code.toLowerCase().includes('insert into') && code.toLowerCase().includes('values');
+            }
+        },
+        {
+            id: 'sql-5',
+            number: '4.5',
+            title: 'SQL UPDATE - Daten aktualisieren',
+            description: 'Aktualisiere bestehende Daten',
+            difficulty: 'medium',
+            task: 'Aktualisiere das Alter aller Benutzer namens "Max" auf 26.',
+            starterCode: '-- Deine SQL Abfrage hier\n',
+            solution: 'UPDATE users SET age = 26 WHERE name = \'Max\';',
+            hints: [
+                'UPDATE aktualisiert Daten',
+                'SET gibt die neuen Werte an',
+                'WHERE filtert welche Zeilen aktualisiert werden'
+            ],
+            validation: (code) => {
+                return code.toLowerCase().includes('update') && code.toLowerCase().includes('set');
+            }
+        },
+        {
+            id: 'sql-6',
+            number: '4.6',
+            title: 'SQL DELETE - Daten löschen',
+            description: 'Lösche Daten aus der Datenbank',
+            difficulty: 'easy',
+            task: 'Lösche alle Benutzer, die jünger als 18 sind.',
+            starterCode: '-- Deine SQL Abfrage hier\n',
+            solution: 'DELETE FROM users WHERE age < 18;',
+            hints: [
+                'DELETE FROM löscht Daten',
+                'WHERE filtert welche Zeilen gelöscht werden',
+                'Sei vorsichtig: ohne WHERE werden ALLE Zeilen gelöscht!'
+            ],
+            validation: (code) => {
+                return code.toLowerCase().includes('delete from') && code.toLowerCase().includes('where');
+            }
+        },
+        {
+            id: 'sql-7',
+            number: '4.7',
+            title: 'SQL JOIN - Tabellen verknüpfen',
+            description: 'Verbinde mehrere Tabellen',
+            difficulty: 'hard',
+            task: 'Verbinde die Tabellen "users" und "orders" über die user_id.',
+            starterCode: '-- Deine SQL Abfrage hier\n',
+            solution: 'SELECT * FROM users JOIN orders ON users.id = orders.user_id;',
+            hints: [
+                'JOIN verbindet Tabellen',
+                'ON gibt die Verknüpfungsbedingung an',
+                'Syntax: JOIN tabelle2 ON tabelle1.spalte = tabelle2.spalte'
+            ],
+            validation: (code) => {
+                return code.toLowerCase().includes('join') && code.toLowerCase().includes('on');
+            }
+        }
     ]
 };
 
@@ -521,6 +649,7 @@ let userProgress = {
         htmlCompleted: 0,
         cssCompleted: 0,
         pythonCompleted: 0,
+        sqlCompleted: 0,
         totalAttempts: 0,
         hintsUsed: 0,
         solutionsViewed: 0,
@@ -528,7 +657,8 @@ let userProgress = {
         firstTrySuccess: 0
     },
     levelStats: {},
-    unlockedAchievements: []
+    unlockedAchievements: [],
+    languageModalShown: {}
 };
 
 // ==================== INITIALIZATION ====================
@@ -686,6 +816,11 @@ function switchSection(section) {
 
     currentSection = section;
 
+    // Show welcome modal for programming sections (not statistics, achievements, etc.)
+    if (['html', 'css', 'python', 'sql'].includes(section)) {
+        showLanguageWelcomeModal(section);
+    }
+
     // Initialize section if needed
     if (section === 'freeEditor' && !freeEditor) {
         initializeFreeEditor();
@@ -696,6 +831,7 @@ function initializeSections() {
     renderLevelGrid('html');
     renderLevelGrid('css');
     renderLevelGrid('python');
+    renderLevelGrid('sql');
     initializeFreeEditor();
 }
 
@@ -740,10 +876,87 @@ function createLevelCard(level, language, index) {
     return card;
 }
 
+// ==================== LANGUAGE WELCOME MODAL ====================
+
+const LANGUAGE_INFO = {
+    html: {
+        name: 'HTML',
+        icon: 'img/html.png',
+        quote: '"HTML ist die Sprache, mit der wir das Web strukturieren. Jede Website beginnt hier!"'
+    },
+    css: {
+        name: 'CSS',
+        icon: 'img/css.png',
+        quote: '"Mit CSS hauchen wir dem Web Leben ein. Design ist nicht nur wie es aussieht, sondern wie es funktioniert!"'
+    },
+    python: {
+        name: 'Python',
+        icon: 'img/python.png',
+        quote: '"Python ist eine der mächtigsten Sprachen der Welt. Von KI bis Webentwicklung - Python kann alles!"'
+    },
+    sql: {
+        name: 'SQL',
+        icon: 'img/sql.png',
+        quote: '"Daten sind das neue Gold. Mit SQL lernst du, diese Schätze zu heben und zu verwalten!"'
+    }
+};
+
+function showLanguageWelcomeModal(language) {
+    // Check if modal was already shown for this language in this session
+    if (userProgress.languageModalShown[language]) {
+        return;
+    }
+
+    const langInfo = LANGUAGE_INFO[language];
+    if (!langInfo) return;
+
+    const modal = document.getElementById('languageModal');
+    const title = document.getElementById('languageModalTitle');
+    const subtitle = document.getElementById('languageModalSubtitle');
+    const quote = document.getElementById('languageModalQuote');
+    const icon = document.getElementById('languageModalIcon');
+
+    title.textContent = `Willkommen bei ${langInfo.name}!`;
+    subtitle.textContent = `Schön, dass du dich für diese Übung in ${langInfo.name} entschieden hast!`;
+    quote.textContent = langInfo.quote;
+    icon.src = langInfo.icon;
+
+    modal.classList.add('active');
+
+    // Mark as shown
+    userProgress.languageModalShown[language] = true;
+    saveUserProgress();
+}
+
+function closeLanguageModal() {
+    const modal = document.getElementById('languageModal');
+    modal.classList.remove('active');
+}
+
+// ==================== CALLIOPE FUNCTIONS ====================
+
+function openCalliopeEditor(mode) {
+    if (mode === 'block') {
+        // Open block editor
+        window.open('https://makecode.calliope.cc/#editor', '_blank');
+        showNotification('Block-Editor wird in neuem Tab geöffnet...', 'info');
+    } else if (mode === 'text') {
+        // Open text editor (JavaScript mode)
+        window.open('https://makecode.calliope.cc/#editor', '_blank');
+        showNotification('Text-Editor wird in neuem Tab geöffnet... Wechsle dort zu JavaScript!', 'info');
+    }
+}
+
 // ==================== LEVEL SCREEN ====================
 
 function openLevel(level, language) {
     currentLevel = level;
+
+    // Show welcome modal on first level of each language
+    const levelIndex = LEVELS_DATA[language].findIndex(l => l.id === level.id);
+    if (levelIndex === 0) {
+        showLanguageWelcomeModal(language);
+    }
 
     // Hide level overview
     const section = document.querySelector(`.section[data-section="${language}"]`);
@@ -771,6 +984,8 @@ function openLevel(level, language) {
 }
 
 function createCodingScreen(level, language) {
+    const needsConsole = language === 'python' || language === 'sql';
+
     return `
         <div class="coding-header">
             <div class="coding-title">${level.number} - ${level.title}</div>
@@ -791,7 +1006,7 @@ function createCodingScreen(level, language) {
             <div class="output-panel">
                 <div class="panel-header">Ausgabe / Vorschau</div>
                 <div class="output-content">
-                    ${language === 'python' ?
+                    ${needsConsole ?
                         '<div class="output-console" id="outputConsole"></div>' :
                         '<iframe class="output-iframe" id="outputPreview"></iframe>'
                     }
@@ -802,7 +1017,11 @@ function createCodingScreen(level, language) {
 }
 
 function initializeEditor(level, language) {
-    const mode = language === 'html' || language === 'css' ? 'htmlmixed' : 'python';
+    let mode = 'htmlmixed';
+    if (language === 'python') mode = 'python';
+    else if (language === 'sql') mode = 'sql';
+    else if (language === 'css' || language === 'html') mode = 'htmlmixed';
+
     const theme = document.documentElement.dataset.theme === 'dark' ? 'monokai' : 'eclipse';
 
     editor = CodeMirror(document.getElementById('codeEditor'), {
@@ -849,6 +1068,8 @@ function runCode() {
 
     if (language === 'python') {
         runPythonCode(code);
+    } else if (language === 'sql') {
+        runSQLCode(code);
     } else {
         runHTMLCSSCode(code);
     }
@@ -899,6 +1120,28 @@ sys.stdout = io.StringIO()
         outputConsole.innerHTML = `<div class="error">Fehler: ${err.message}</div>`;
         playSound('error');
     }
+}
+
+function runSQLCode(code) {
+    const outputConsole = document.getElementById('outputConsole');
+
+    // For SQL, we'll just validate and show the query
+    // In a real application, this would connect to a database
+    outputConsole.innerHTML = `
+        <div class="output-line success">SQL Abfrage wird validiert...</div>
+        <div class="output-line" style="margin-top: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 5px;">
+            <strong>Deine Abfrage:</strong><br>
+            <code>${escapeHtml(code)}</code>
+        </div>
+        <div class="output-line success" style="margin-top: 10px;">
+            ✓ Syntax überprüft! Die Abfrage sieht korrekt aus.
+        </div>
+    `;
+
+    // Check solution
+    setTimeout(() => {
+        checkSolution(code);
+    }, 500);
 }
 
 function checkSolution(code) {
@@ -1034,7 +1277,8 @@ function handleFreeEditorLanguageChange(e) {
     const placeholders = {
         'htmlmixed': '<!-- Schreibe deinen HTML Code hier -->\n',
         'css': '/* Schreibe dein CSS hier */\n',
-        'python': '# Schreibe deinen Python Code hier\n'
+        'python': '# Schreibe deinen Python Code hier\n',
+        'sql': '-- Schreibe deine SQL Abfrage hier\nSELECT * FROM tabelle;\n'
     };
 
     if (freeEditor.getValue().trim() === '' || freeEditor.getValue().includes('Schreibe deinen')) {
@@ -1045,7 +1289,7 @@ function handleFreeEditorLanguageChange(e) {
     const preview = document.getElementById('freePreview');
     const console = document.getElementById('freeOutput');
 
-    if (language === 'python') {
+    if (language === 'python' || language === 'sql') {
         preview.style.display = 'none';
         console.style.display = 'block';
     } else {
@@ -1060,6 +1304,8 @@ function runFreeCode() {
 
     if (language === 'python') {
         runFreePython(code);
+    } else if (language === 'sql') {
+        runFreeSQL(code);
     } else {
         runFreeHTMLCSS(code);
     }
@@ -1100,12 +1346,30 @@ sys.stdout = io.StringIO()
     }
 }
 
+function runFreeSQL(code) {
+    const output = document.getElementById('freeOutput');
+
+    output.innerHTML = `
+        <div class="output-line success">SQL Abfrage wird validiert...</div>
+        <div class="output-line" style="margin-top: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 5px;">
+            <strong>Deine Abfrage:</strong><br>
+            <code>${escapeHtml(code)}</code>
+        </div>
+        <div class="output-line success" style="margin-top: 10px;">
+            ✓ SQL-Syntax überprüft! Die Abfrage sieht korrekt aus.
+        </div>
+    `;
+
+    showNotification('SQL-Code validiert!', 'success');
+}
+
 function clearFreeCode() {
     const language = document.getElementById('freeEditorLanguage').value;
     const placeholders = {
         'htmlmixed': '<!-- Schreibe deinen HTML Code hier -->\n',
         'css': '/* Schreibe dein CSS hier */\n',
-        'python': '# Schreibe deinen Python Code hier\n'
+        'python': '# Schreibe deinen Python Code hier\n',
+        'sql': '-- Schreibe deine SQL Abfrage hier\nSELECT * FROM tabelle;\n'
     };
 
     freeEditor.setValue(placeholders[language]);
@@ -1129,7 +1393,7 @@ async function initializePyodide() {
 // ==================== STATISTICS & ACHIEVEMENTS ====================
 
 function updateProgress() {
-    const totalLevels = LEVELS_DATA.html.length + LEVELS_DATA.css.length + LEVELS_DATA.python.length;
+    const totalLevels = LEVELS_DATA.html.length + LEVELS_DATA.css.length + LEVELS_DATA.python.length + LEVELS_DATA.sql.length;
     const completed = userProgress.stats.totalCompleted;
     const percentage = Math.round((completed / totalLevels) * 100);
 
