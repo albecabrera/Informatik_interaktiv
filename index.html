@@ -14,7 +14,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/lua/lua.min.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.min.js"></script>
+    <script src="https://unpkg.com/fengari-web@0.1.4/dist/fengari-web.js"></script>
     <style>
         * {
             margin: 0;
@@ -837,6 +840,75 @@
             color: white;
         }
 
+        /* Roblox Character Canvas */
+        .roblox-canvas-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 50%, #90EE90 50%, #76D676 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #robloxCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .roblox-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* SQL Table Styling */
+        .sql-results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .sql-results-table th {
+            background: var(--accent-primary);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .sql-results-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .sql-results-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .sql-results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .sql-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--accent-secondary);
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
         /* Free Code Editor */
         .free-editor-controls {
             display: flex;
@@ -968,6 +1040,12 @@
                 </svg>
                 5. MiniCalliope
             </button>
+            <button class="nav-tab" data-section="lua">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 6px;">
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+                6. Lua & Roblox
+            </button>
             <button class="nav-tab" data-section="freeEditor">💻 Freier Code-Editor</button>
             <button class="nav-tab" data-section="statistics">📊 Statistiken</button>
             <button class="nav-tab" data-section="achievements">🏆 Erfolge</button>
@@ -1057,6 +1135,21 @@
                 </div>
             </div>
 
+            <!-- Lua Section -->
+            <div class="section" data-section="lua">
+                <div class="level-overview">
+                    <h2 class="section-title">6. Lua & Roblox - Spieleentwicklung</h2>
+                    <div class="difficulty-filter">
+                        <button class="difficulty-btn active" data-difficulty="all">Alle</button>
+                        <button class="difficulty-btn" data-difficulty="easy">Leicht</button>
+                        <button class="difficulty-btn" data-difficulty="medium">Mittel</button>
+                        <button class="difficulty-btn" data-difficulty="hard">Schwer</button>
+                    </div>
+                    <div class="levels-grid" id="luaLevels"></div>
+                </div>
+                <div class="coding-screen" id="luaCodingScreen"></div>
+            </div>
+
             <!-- Free Editor Section -->
             <div class="section" data-section="freeEditor">
                 <div class="level-overview">
@@ -1070,6 +1163,7 @@
                             <option value="css">CSS</option>
                             <option value="python">Python</option>
                             <option value="sql">SQL</option>
+                            <option value="lua">Lua</option>
                         </select>
                         <button class="btn btn-success" id="runFreeCode">▶ Code ausführen</button>
                         <button class="btn btn-secondary" id="clearFreeCode">🗑 Zurücksetzen</button>
